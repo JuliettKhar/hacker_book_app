@@ -1,16 +1,7 @@
 import query from './db';
-const books = [
-    {
-        id: 1,
-        title: 'some title',
-        description: 'desc',
-        rating: 5,
-        imageUrl: 'url.png'
-    }
-]
 
 export async function allBooks() {
-        const sql = `
+    const sql = `
         select * from hb.book;
     `;
 
@@ -21,5 +12,4 @@ export async function allBooks() {
         console.log(e);
         throw err
     }
-    // return books;
 }
