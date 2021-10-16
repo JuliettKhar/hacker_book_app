@@ -3,7 +3,42 @@ import * as R from 'ramda';
 import { BookListSection, SORT_BY } from './components/Book';
 import Error from './components/Error';
 import { RecentReviewSection } from './components/Review';
-import data from './data/';
+import fetch from './fetch';
+
+const query = `
+fragment Book on Book {
+  id
+  title
+  description
+  rating
+}
+fragment Review on Review {
+  id
+  title
+  rating
+  comment
+  user {
+    name
+  }
+}
+query Home($orderBy: BooksOrderBy!) {
+  reviews {
+    ...Review
+    book {
+      ...Book
+      imageUrl(size: SMALL)
+    }
+  }
+  books (orderBy: $orderBy) {
+    ...Book
+    imageUrl
+    authors {
+      name
+    }
+  }
+}
+`;
+
 
 class Home extends Component {
   state = {
@@ -20,12 +55,16 @@ class Home extends Component {
   }
   async loadData() {
     try {
-      // TODO: query actual books and reviews from graphql
-      const books = data.books;
-      const reviews = data.reviews;
-      const errors = [];
       // eslint-disable-next-line
       const { orderBy } = this.state;
+      const variables = { orderBy };
+
+      const res = await fetch({ query, variables })
+      const books = R.path(['data', 'books'], res);
+      const reviews = R.path(['data', 'reviews'], res);
+      const errorList = R.pathOr([], ['errors'], res);
+      const errors = R.map(err => err.message, errorList)
+
       this.setState({
         books,
         reviews,

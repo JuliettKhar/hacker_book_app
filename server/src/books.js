@@ -2,9 +2,15 @@ import query from './db';
 import {groupBy, map} from 'ramda';
 import DataLoader from 'dataloader';
 
-export async function allBooks() {
+const ORDER_BY = {
+    RATING_DESC: 'rating desc',
+    ID_DESC: 'id desc'
+}
+export async function allBooks(args) {
+    const orderBy = ORDER_BY[args.orderBy]
     const sql = `
-        select * from hb.book;
+        select * from hb.book
+        order by ${orderBy};
     `;
 
     try {

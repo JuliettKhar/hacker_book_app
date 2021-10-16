@@ -29,7 +29,7 @@ const resolvers = {
     },
   },
   Query: {
-    books: () => allBooks(),
+    books: (root, args) => allBooks(args),
     reviews: () => allReviews(),
     users: () => allUsers(),
   },

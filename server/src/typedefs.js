@@ -3,7 +3,7 @@ schema {
     query: Query
 }
 type Query {
-    books: [Book]
+    books(orderBy: BooksOrderBy = RATING_DESC): [Book]
     reviews: [Review]
     users: [User]
 }
@@ -38,6 +38,10 @@ type Author {
 enum ImageSize {
     LARGE
     SMALL
+}
+enum BooksOrderBy {
+    RATING_DESC
+    ID_DESC
 }
 `;
 
