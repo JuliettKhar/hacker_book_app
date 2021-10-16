@@ -2,9 +2,9 @@ import query from './db';
 import {groupBy, map} from 'ramda';
 import DataLoader from 'dataloader';
 
-export async function allBooks() {
+export async function allUsers() {
     const sql = `
-        select * from hb.book;
+    select * from hb.user;
     `;
 
     try {
@@ -16,21 +16,17 @@ export async function allBooks() {
     }
 }
 
-export function imageUrl(size, id) {
-    const zoom = size === 'SMALL' ? 1 : 0;
-    return `//books.google.com/books/content?id=${id}&printsec=frontcover&img=1&zoom=${zoom}&source=gbs_api`
-}
 
-export async function findBookByIds(ids) {
+export async function findUsersByIds(ids) {
     const sql = `
-    select * from hb.book
-    where hb.book.id = ANY($1);
+    select * from hb.user
+    where hb.user.id = ANY($1);
     `;
     const params = [ids];
 
     try {
         const result = await query(sql, params);
-        const rowsById = groupBy(book => book.id, result.rows);
+        const rowsById = groupBy(user => user.id, result.rows);
         return map(id => {
             return rowsById[id] ? rowsById[id][0] : null;
         }, ids);
@@ -41,6 +37,6 @@ export async function findBookByIds(ids) {
     }
 }
 
-export function findBooksByIdsLoader() {
-    return new DataLoader(findBookByIds);
+export function findUsersByIdsLoader() {
+    return new DataLoader(findUsersByIds);
 }
