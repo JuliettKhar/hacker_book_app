@@ -2,7 +2,24 @@ import React, { Component } from 'react';
 import { Redirect } from 'react-router-dom';
 import { BookSearchForm, BookSearchResults } from './components/Book';
 import Error from './components/Error';
-import data from './data';
+import fetch from './fetch';
+import * as R from 'ramda';
+
+const query = `
+fragment SearchBook on SearchBookResult {
+  id
+  title
+  description
+  authors
+  imageUrl
+}
+query SearchBook($query: String!) {
+  searchBook(query: $query) {
+    ...SearchBook
+  }
+}
+`;
+
 
 class AddBook extends Component {
   state = {
@@ -19,9 +36,13 @@ class AddBook extends Component {
     // eslint-disable-next-line
     const { term } = this.state;
     try {
-      // TODO: fetch actual search results using graphql
-      const results = data.results;
-      const errors = [];
+      const variables = { query: term };
+      const res = await fetch({ query, variables })
+      console.log(res)
+      const results = R.path(['data', 'searchBook'], res);
+      const errorList = R.pathOr([], ['errors'], res);
+      const errors = R.map(err => err.message, errorList);
+
       this.setState({ results, errors });
     } catch (err) {
       this.setState({ errors: [err.message] });

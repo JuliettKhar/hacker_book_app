@@ -1,6 +1,7 @@
 import query from './db';
-import {groupBy, map} from 'ramda';
+import {groupBy, map, pathOr} from 'ramda';
 import DataLoader from 'dataloader';
+import axios from 'axios';
 
 const ORDER_BY = {
     RATING_DESC: 'rating desc',
@@ -49,4 +50,17 @@ export async function findBookByIds(ids) {
 
 export function findBooksByIdsLoader() {
     return new DataLoader(findBookByIds);
+}
+
+export async function searchBook(query) {
+    const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}`;
+
+    try {
+        const res = await axios(url);
+        const items = pathOr([], ['data', 'items'], res);
+        return map(book => ({id: book.id, ...book.volumeInfo}), items);
+    } catch (e) {
+        console.log(e);
+        throw e
+    }
 }

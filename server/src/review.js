@@ -34,6 +34,21 @@ const params = [ids];
     }
 }
 
+export async function createReview(reviewInput) {
+const { bookId, email, name, rating, title, comment } = reviewInput;
+const sql = `
+select * from hb.create_review($1, $2, $3, $4, $5, $6);
+`;
+ const params = [bookId, email, name, rating, title, comment]
+    try {
+        const res = await query(sql, params);
+        return res.rows[0];
+    } catch (e) {
+          console.log(e);
+          throw e;
+    }
+}
+
 export function findReviewsByBookIdsLoader() {
    return new DataLoader(findReviewsByBookIds)
 }

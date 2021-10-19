@@ -1,12 +1,32 @@
 const typeDefs = `
 schema {
     query: Query
+    mutation: Mutation
 }
 type Query {
     books(orderBy: BooksOrderBy = RATING_DESC): [Book]
     reviews: [Review]
     users: [User]
     book(id: ID!): Book
+    searchBook(query: String!): [SearchBookResult]
+}
+type SearchBookResult {
+    id: ID!
+    title: String
+    description: String
+    authors: [String]
+    imageUrl(size: ImageSize = LARGE): String
+}
+type Mutation {
+  createReview(reviewInput: ReviewInput!): Review
+}
+input ReviewInput {
+  bookId: ID!
+  rating: Int!
+  name: String!
+  email: String!
+  title: String
+  comment: String
 }
 
 type User {

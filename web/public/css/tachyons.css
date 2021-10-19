@@ -1809,7 +1809,7 @@ code, .code { font-family: Consolas, monaco, monospace; }
 .indent { text-indent: 1em; margin-top: 0; margin-bottom: 0; }
 .small-caps { font-variant: small-caps; }
 /* Combine this class with a width to truncate text (or just leave as is to truncate at width of containing element. */
-.truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 450px;}
 /*
 
    UTILITIES

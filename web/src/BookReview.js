@@ -4,9 +4,34 @@ import * as R from 'ramda';
 import * as EmailValidator from 'email-validator';
 import { Book, BookReviewForm } from './components/Book';
 import Error from './components/Error';
-import data from './data';
+import fetch from './fetch';
 
-const findBookById = (id, books) => R.find(R.propEq('id', id), books);
+const query = `
+  fragment Book on Book {
+    id
+    title
+    description
+    imageUrl
+    rating
+  }
+  
+  query Book($id: ID!){
+    book(id: $id) {
+      ...Book
+      authors {
+        name
+      }
+    }
+  }
+`;
+
+const createReviewMutation = `
+mutation CreateReview($reviewInput: ReviewInput!){
+  createReview(reviewInput: $reviewInput){
+    id
+  }
+}
+`;
 
 const isInputValid = reviewInput => {
   const { count, name, email } = reviewInput;
@@ -31,9 +56,12 @@ class BookReview extends Component {
   async componentDidMount() {
     const id = R.path(['props', 'match', 'params', 'id'], this);
     try {
-      // TODO: fetch actual book using graphql
-      const book = findBookById(id, data.books);
-      const errors = [];
+      const variables = { id };
+      const res = await fetch({ query, variables })
+      const book = R.path(['data', 'book'], res);
+      const errorList = R.pathOr([], ['errors'], res);
+      const errors = R.map(err => err.message, errorList);
+
       this.setState({ book, errors });
     } catch (err) {
       this.setState({ errors: [err.message] });
@@ -51,10 +79,23 @@ class BookReview extends Component {
     const { book, reviewInput } = this.state;
     // eslint-disable-next-line
     const { name, count, email, title, comment } = reviewInput;
-    // TODO: add actual mutation to add new review
     try {
-      const errors = [];
-      this.setState({ redirect: true, errors });
+      const variables = {
+        reviewInput: {
+          bookId: book.id,
+          rating: count,
+          name,
+          email,
+          title,
+          comment
+        }
+      };
+      const res = await fetch({query: createReviewMutation, variables});
+      const id = R.path(['data', 'createReview', 'id'], res);
+      console.log(id, 'id')
+      const errorList = R.pathOr([], ['errors'], res);
+      const errors = R.map(err => err.message, errorList);
+      this.setState({ redirect: !!id, errors });
     } catch (err) {}
   };
   render() {

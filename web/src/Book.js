@@ -3,9 +3,38 @@ import * as R from 'ramda';
 import { BookDetail } from './components/Book';
 import { BookDetailReviews } from './components/Book';
 import Error from './components/Error';
-import data from './data';
+import fetch from './fetch';
 
-const findBookById = (id, books) => R.find(R.propEq('id', id), books);
+const query = `
+  fragment Book on Book {
+    id
+    title
+    description
+    imageUrl
+    rating
+  }
+  fragment Review on Review {
+    id
+    title
+    rating
+    comment
+    user {
+      name
+      imageUrl
+    }
+  }
+  query Book($id: ID!) {
+    book(id: $id) {
+      ...Book
+      reviews {
+        ...Review
+      }
+      authors {
+        name
+      }
+    }
+  }
+`;
 
 class Book extends Component {
   state = {
@@ -15,9 +44,12 @@ class Book extends Component {
   async componentDidMount() {
     const id = R.path(['props', 'match', 'params', 'id'], this);
     try {
-      // TODO: fetch actual book using graphql
-      const book = findBookById(id, data.books);
-      const errors = [];
+      const variables = { id };
+      const res = await fetch({ query, variables })
+      const book = R.path(['data', 'book'], res);
+      const errorList = R.pathOr([], ['errors'], res);
+      const errors = R.map(err => err.message, errorList);
+
       this.setState({ book, errors });
     } catch (err) {
       this.setState({ errors: [err.message] });

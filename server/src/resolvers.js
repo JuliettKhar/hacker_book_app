@@ -1,5 +1,5 @@
-import { allBooks, imageUrl } from './books';
-import { allReviews } from './review';
+import { allBooks, imageUrl, searchBook } from './books';
+import { allReviews, createReview } from './review';
 import { allUsers } from './user';
 import gravatar from 'gravatar';
 
@@ -21,6 +21,9 @@ const resolvers = {
 
       return findReviewsByBookIdsLoader.load(book.id)
     }
+  },
+  SearchBookResult: {
+    imageUrl: (result, args) => imageUrl(args.size, result.id),
   },
   Review: {
     book: (review, args, context)  => {
@@ -45,8 +48,18 @@ const resolvers = {
       const { findBooksByIdsLoader } = loaders;
 
       return findBooksByIdsLoader.load(args.id)
+    },
+    searchBook: (root, args) => {
+      const {query} = args;
+      return searchBook(query)
     }
   },
+  Mutation: {
+    createReview: (root, args) => {
+      const {reviewInput} = args;
+      return createReview(reviewInput);
+    }
+  }
 };
 
 export default resolvers;
