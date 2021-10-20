@@ -1,6 +1,7 @@
-import { allBooks, imageUrl, searchBook } from './books';
+import { allBooks, imageUrl, searchBook, createBook } from './books';
 import { allReviews, createReview } from './review';
 import { allUsers } from './user';
+import { search } from './search';
 import gravatar from 'gravatar';
 
 const resolvers = {
@@ -24,6 +25,9 @@ const resolvers = {
   },
   SearchBookResult: {
     imageUrl: (result, args) => imageUrl(args.size, result.id),
+  },
+  SearchResult: {
+    __resolveType: obj => obj.__type
   },
   Review: {
     book: (review, args, context)  => {
@@ -52,12 +56,20 @@ const resolvers = {
     searchBook: (root, args) => {
       const {query} = args;
       return searchBook(query)
+    },
+    search: (root, args) => {
+      const {query} = args;
+      return search(query)
     }
   },
   Mutation: {
     createReview: (root, args) => {
       const {reviewInput} = args;
       return createReview(reviewInput);
+    },
+    createBook: (root, args) => {
+      const { googleBookId } = args;
+      return createBook(googleBookId);
     }
   }
 };

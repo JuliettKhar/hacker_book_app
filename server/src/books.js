@@ -2,6 +2,7 @@ import query from './db';
 import {groupBy, map, pathOr} from 'ramda';
 import DataLoader from 'dataloader';
 import axios from 'axios';
+import stripTags from 'striptags';
 
 const ORDER_BY = {
     RATING_DESC: 'rating desc',
@@ -59,6 +60,47 @@ export async function searchBook(query) {
         const res = await axios(url);
         const items = pathOr([], ['data', 'items'], res);
         return map(book => ({id: book.id, ...book.volumeInfo}), items);
+    } catch (e) {
+        console.log(e);
+        throw e
+    }
+}
+
+export async function createBook(googleBookId) {
+    try {
+        const book = await findBookByGoogleId(googleBookId);
+        const {
+            title = '',
+            subtitle = '',
+            description = '',
+            authors = [],
+            pageCount = 0,
+        } = book;
+            const sql = `
+    select * from hb.create_book($1, $2, $3, $4, $5, $6);
+    `;
+                const params = [
+      googleBookId,
+      stripTags(title),
+      stripTags(subtitle),
+      stripTags(description),
+      authors,
+      pageCount,
+    ];
+                const res = await query(sql, params);
+    return res.rows[0];
+    } catch (e) {
+        console.log(e);
+        throw e
+    }
+}
+
+async function findBookByGoogleId(googleBookId) {
+    const url = `https://www.googleapis.com/books/v1/volumes/${googleBookId}`;
+    try {
+        const res = await axios(url);
+        const book = pathOr({}, ['data'], res);
+        return { ...book, ...book.volumeInfo};
     } catch (e) {
         console.log(e);
         throw e

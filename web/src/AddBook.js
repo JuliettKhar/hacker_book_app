@@ -20,6 +20,15 @@ query SearchBook($query: String!) {
 }
 `;
 
+const createBookMutation = `
+mutation CreateBook($googleBookId: ID!) {
+  createBook(googleBookId: $googleBookId) {
+    id
+    title
+  }
+}
+`;
+
 
 class AddBook extends Component {
   state = {
@@ -38,7 +47,6 @@ class AddBook extends Component {
     try {
       const variables = { query: term };
       const res = await fetch({ query, variables })
-      console.log(res)
       const results = R.path(['data', 'searchBook'], res);
       const errorList = R.pathOr([], ['errors'], res);
       const errors = R.map(err => err.message, errorList);
@@ -51,8 +59,12 @@ class AddBook extends Component {
   addBook = async googleBookId => {
     try {
       // TODO: add mutation to add book using graphql
-      const redirectBookId = 1;
-      const errors = [];
+      const variables = { googleBookId };
+      const res = fetch({query: createBookMutation, variables })
+      const redirectBookId = R.path(['data', 'createBook', 'id'], res);
+      const errorList = R.pathOr([], ['errors'], res);
+
+      const errors = R.map(err => err.message, errorList);
       this.setState({ redirectBookId, errors });
     } catch (err) {
       this.setState({ errors: [err.message] });
